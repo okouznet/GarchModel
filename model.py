@@ -23,15 +23,15 @@ class Model:
         return logL
 
     def garch_pmf(self, endog, param):
-        omega, alpha, beta, a, b = param
+        omega, alpha, beta, a, b, sigma = param
         n = len(endog[:, 0])
-        r = endog[:, 0] - a - b * endog[:, 1]
-        s = np.ones(n) * 0.01
-        s[2] = st.variance(r[0:3])
-        for i in range(3, n):
-            s[i] = omega + alpha * r[i - 1] ** 2 + beta * (s[i - 1])  # GARCH(1,1) model
+        e = endog[:, 0] - a - b * endog[:, 1]
+        h = np.ones(n) * 0.01
+        h[0] = sigma
+        for t in range(1, n):
+            h[t] = omega + alpha * e[t - 1] ** 2 + beta * (h[t - 1])  # GARCH(1,1) model
 
-        return stats.lognorm.pdf(x=r, s=0.94, loc=0, scale=1)
+        return stats.lognorm.pdf(x=e, s=0.94, loc=0, scale=h) #FIX
 
 class GARCH(GenericLikelihoodModel):
     def __init__(self, endog, exog=None, **kwds):
@@ -48,3 +48,15 @@ class GARCH(GenericLikelihoodModel):
     def fit(self, start_params=None, maxiter=10000, maxfun=5000, **kwds):
         return super(GARCH, self).fit(start_params=start_params,
                                                     maxiter=maxiter, maxfun=maxfun, **kwds)
+
+    def fittedValues(self, endog, est_params):
+        omega, alpha, beta, a, b, sigma = est_params
+        n = len(endog[:, 0])
+        est = a + b*endog[:, 1]
+        e = est - a - b * endog[:, 1]
+        h = np.ones(n) * 0.01
+        h[0] = sigma
+        for t in range(1, n):
+            h[t] = omega + alpha * e[t - 1] ** 2 + beta * (h[t - 1])  # GARCH(1,1) model
+        z = e * h
+        return est + z
