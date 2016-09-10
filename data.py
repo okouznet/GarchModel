@@ -37,6 +37,7 @@ class Data:
         stock_data.set_index(['Dates'], inplace=True)
         # calculate percent change
         # stock_data = stock_data.pct_change(periods=1)
+        stock_data.to_csv(path_or_buf='shocks.csv', sep=',')
         return stock_data
 
     def shockData(self):
@@ -61,6 +62,7 @@ class Data:
         start = shock_data.index.searchsorted(dt.datetime(2007, 1, 1))
         end = shock_data.index.searchsorted(dt.datetime(2016, 6, 1))
         shock_data = shock_data[start:end]
+        shock_data.to_csv(path_or_buf='shocks.csv', sep=',')
         return shock_data
 
 

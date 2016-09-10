@@ -1,6 +1,7 @@
 from __future__ import division
 import numpy as np
 import statistics as st
+import pandas as pd
 import math
 from matplotlib import  pyplot as plt
 from scipy import stats
@@ -60,3 +61,9 @@ class GARCH(GenericLikelihoodModel):
             h[t] = omega + alpha * e[t - 1] ** 2 + beta * (h[t - 1])  # GARCH(1,1) model
         z = e * h
         return est + z
+
+    def plotFitted(self, y, fitted):
+        fitted_val = np.column_stack((y, fitted))
+        graph = pd.DataFrame(fitted_val, columns=['actual', 'fitted'])
+        graph.plot()
+        plt.show()
