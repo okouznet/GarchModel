@@ -6,6 +6,7 @@ from statsmodels.tsa.stattools import adfuller
 from statsmodels.graphics.tsaplots import plot_acf
 from statsmodels.stats.diagnostic import acorr_ljungbox
 from scipy.stats.stats import pearsonr
+from scipy.stats import ttest_ind
 
 class Test:
     def __init__(self):
@@ -30,21 +31,14 @@ class Test:
         # Determing rolling statistics
         rolmean = pd.rolling_mean(ts, window=12)
         rolstd = pd.rolling_std(ts, window=12)
-        ts_log = np.log(ts)
 
         # Plot rolling statistics:
-        plt.subplot(211)
+        plt.subplot(111)
         orig = plt.plot(ts, color='blue', label='Original')
         mean = plt.plot(rolmean, color='red', label='Rolling Mean')
         std = plt.plot(rolstd, color='black', label='Rolling Std')
         plt.legend(loc='best')
         plt.title('Rolling Mean & Standard Deviation')
-        # Plot Log (Normalized) Rolling Statistics
-        plt.subplot(212)
-        moving_avg = pd.rolling_mean(ts_log, 12)
-        plt.plot(ts_log)
-        plt.plot(moving_avg, color='red')
-        plt.title('Normalized Rolling Mean & Standard Deviation')
         plt.show()
 
         # Perform Dickey-Fuller test:
@@ -69,7 +63,7 @@ class Test:
 
     def residualTest(self, residual):
         plt.subplot(211)
-        plt.plot(residual, label='Residuals')
+        plt.plot(residual, 'bo', label='Residuals')
         plt.legend(loc='best')
         plt.title('Residuals')
         plt.subplot(212)
@@ -78,3 +72,7 @@ class Test:
         plt.title('Residual Distribution')
         plt.tight_layout()
         plt.show()
+
+    def ttest(self, a, b):
+        x = ttest_ind(a=a, b=b)
+        print(x)

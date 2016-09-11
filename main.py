@@ -9,7 +9,8 @@ import matplotlib.pyplot as plt
 import pylab
 import numpy as np
 from scipy import optimize
-from fredapi import Fred
+import statsmodels.api as sm
+
 
 from biokit.viz import corrplot
 
@@ -24,34 +25,46 @@ if __name__ == '__main__':
     test = tests.Test()
 
     #basic statistics test
-    test.testStationary(ts=stock_data['xlp'][1000:1200])
+    #test.testStationary(ts=stock_data['xlp'][1000:1200])
 
     df = np.column_stack((data['xlp'], data['GDP'], data['UMCSENT'], data['CPIAUCSL']))
     dftest = pd.DataFrame(df, columns=['xlp', 'GDP', 'UMCSENT', 'CPI'])
-    test.CorrelationPlot(data=dftest)
-    test.scatterMatrix(data=dftest)
+    #test.CorrelationPlot(data=dftest)
+    #test.scatterMatrix(data=dftest)
 
-    #MLE estimation
     m = model.Model()
-    ylag = stock_data['xlp'].shift(periods=1)
+    ylag = data['xlp'].shift(periods=1)
     ylag = ylag.values
     for i in range(0, len(ylag)):
         ylag[i] = float(ylag[i])
-    y = stock_data['xlp'].values
+    y = data['xlp'].values
     for i in range(0, len(y)):
         y[i] = float(y[i])
-    ylag[0] = 0
-    matrix = np.column_stack((y,ylag))
-    garch = model.GARCH(endog=matrix)
-    param = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
-    results = garch.fit(start_params=param)
-    print(results.params)
 
-    #fitted values
-    fitted = garch.fittedValues(endog=matrix, est_params=results.params)
-    garch.plotFitted(y=y[1000:1200], fitted=fitted[1000:1200])
+    gdp = data['GDP']
+    gdp = gdp.fillna(0)
+    #ylag[0:2] = 0
 
-    #tests
-    resid = y - fitted
-    test.residualTest(residual=resid[1000:1200])
-    test.acfTest(ts=resid[1000:1200])
+    y = y[2:2370]
+    ylag = ylag[2:2370]
+    gdp = gdp[2:2370]
+    matrix = np.column_stack((y, ylag, gdp))
+
+
+    simple = optimize.fmin(m.GARCH11_logLSimple,np.array([.5, .5, .5, .5, .5]), args=(matrix,), maxfun=100000, maxiter=10000, full_output=1)
+    full = optimize.fmin(m.GARCH11_logL,np.array([.5, .5, .5, .5, .5, .5]), args=(matrix,), maxfun=100000, maxiter=10000, full_output=1)
+    simple_est = np.abs(simple[0])
+    full_est = np.abs(full[0])
+    #print(sim)
+
+    simple_fitted = m.fittedValues(endog=matrix, est_params=simple_est, simple_model=True)
+    full_fitted = m.fittedValues(endog=matrix, est_params=full_est, simple_model=False)
+
+    m.plotFitted(y=y[1000:1200], fitted=simple_fitted[1000:1200])
+    m.plotFitted(y=y[1000:1200], fitted=full_fitted[1000:1200])
+
+    # tests
+    #resid = y - fitted
+    #test.residualTest(residual=resid[1000:1200])
+    #test.acfTest(ts=resid[1000:1200])
+    test.ttest(a=simple_fitted, b=full_fitted)

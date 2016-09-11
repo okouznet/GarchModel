@@ -16,8 +16,9 @@ class Data:
             s = Share(stock)
             d = pd.DataFrame(s.get_historical('2007-01-01', '2016-06-01'))
             dates = d['Date']
-            data[stock] = d['Adj_Close']
-            data[stock] = data[stock].astype(float)
+            x = d['Adj_Close']
+            x = x.astype(float)
+            data[stock] = x.pct_change(periods=1)
         data['Dates'] = dates
         return data
 
@@ -26,18 +27,19 @@ class Data:
         d = pd.DataFrame(fred.get_series_as_of_date(shock, '6/1/2016'))
         data = pd.DataFrame()
         data['Dates'] = d['realtime_start']
-        data[shock] = d['value']
+        x = d['value']
+        data[shock] = x.pct_change(periods=1)
         data = data.sort_values('Dates')
         data = data.drop_duplicates(subset='Dates')
         return data
 
-    def stockData(self, stock=[]):
-        stock_data = self.stockConnection(stocks=stock)
+    def stockData(self, stocks=[]):
+        stock_data = self.stockConnection(stocks=stocks)
         stock_data.Dates = pd.to_datetime(stock_data['Dates'], format='%Y-%m-%d')
         stock_data.set_index(['Dates'], inplace=True)
         # calculate percent change
         # stock_data = stock_data.pct_change(periods=1)
-        stock_data.to_csv(path_or_buf='shocks.csv', sep=',')
+        stock_data.to_csv(path_or_buf='stocks.csv', sep=',')
         return stock_data
 
     def shockData(self):
