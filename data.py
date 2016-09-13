@@ -1,7 +1,6 @@
 import pandas as pd
-import datetime as dt
 import numpy as np
-import statistics as st
+import datetime as dt
 from yahoo_finance import Share
 from fredapi import Fred
 
@@ -19,6 +18,7 @@ class Data:
             x = d['Adj_Close']
             x = x.astype(float)
             data[stock] = x.pct_change(periods=1)
+            #data[stock] = x
         data['Dates'] = dates
         return data
 
@@ -38,7 +38,7 @@ class Data:
         stock_data.Dates = pd.to_datetime(stock_data['Dates'], format='%Y-%m-%d')
         stock_data.set_index(['Dates'], inplace=True)
         # calculate percent change
-        # stock_data = stock_data.pct_change(periods=1)
+        stock_data = stock_data.pct_change(periods=1)
         stock_data.to_csv(path_or_buf='stocks.csv', sep=',')
         return stock_data
 
@@ -59,7 +59,7 @@ class Data:
         shock_data['GDP'] = shock_data['GDP'].astype(float)
         shock_data['UMCSENT'] = shock_data['UMCSENT'].astype(float)
         shock_data['CPIAUCSL'] = shock_data['CPIAUCSL'].astype(float)
-        # shock_data = shock_data.pct_change(periods=1)
+        #shock_data = shock_data.pct_change(periods=1)
 
         start = shock_data.index.searchsorted(dt.datetime(2007, 1, 1))
         end = shock_data.index.searchsorted(dt.datetime(2016, 6, 1))
@@ -67,5 +67,27 @@ class Data:
         shock_data.to_csv(path_or_buf='shocks.csv', sep=',')
         return shock_data
 
+    def getSeasonalityEffects(self, data):
+        data = pd.to_datetime(data, format='%Y-%m-%d')
 
+        monday = [] #Monday effect
+        january = [] #January effect
+        end = [] #End of Year effect
+        for i in range(len(data)):
+            if(data[i].weekday() == 0): #Monday
+                monday.append(1)
+            else:
+                monday.append(0)
+            if(data[i].month == 1): #January
+                january.append(1)
+            else:
+                january.append(0)
+
+            if(data[i].month == 12): #End-of-year
+                end.append(1)
+            else:
+                end.append(0)
+
+        matrix = np.column_stack((monday, january, end))
+        return matrix
 

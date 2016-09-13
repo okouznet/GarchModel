@@ -1,10 +1,10 @@
 from biokit.viz import corrplot
 import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.graphics.tsaplots import plot_acf
 from statsmodels.stats.diagnostic import acorr_ljungbox
+from statsmodels.graphics.gofplots import ProbPlot
 from scipy.stats.stats import pearsonr
 from scipy.stats import ttest_ind
 
@@ -33,6 +33,7 @@ class Test:
         rolstd = pd.rolling_std(ts, window=12)
 
         # Plot rolling statistics:
+        plt.style.use('ggplot')
         plt.subplot(111)
         orig = plt.plot(ts, color='blue', label='Original')
         mean = plt.plot(rolmean, color='red', label='Rolling Mean')
@@ -72,6 +73,9 @@ class Test:
         plt.title('Residual Distribution')
         plt.tight_layout()
         plt.show()
+
+        probplot = ProbPlot(residual)
+        probplot.qqplot()
 
     def ttest(self, a, b):
         x = ttest_ind(a=a, b=b)
