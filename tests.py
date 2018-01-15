@@ -43,24 +43,24 @@ class Test:
         plt.show()
 
         # Perform Dickey-Fuller test:
-        print 'Results of Dickey-Fuller Test:'
+        print('Results of Dickey-Fuller Test:')
         dftest = adfuller(ts, autolag='AIC')
         dfoutput = pd.Series(dftest[0:4],
                              index=['Test Statistic', 'p-value', '#Lags Used', 'Number of Observations Used'])
         for key, value in dftest[4].items():
             dfoutput['Critical Value (%s)' % key] = value
-        print dfoutput
+        print(dfoutput)
 
     def acfTest(self, ts):
         plot_acf(x=ts)
         plt.show()
         lbtest = acorr_ljungbox(x=ts, lags=1, boxpierce=True)
         #lb, lbpval, bp, bppval
-        print 'Results of Ljung Box Test and Box Pierce Test: '
+        print('Results of Ljung Box Test and Box Pierce Test: ')
         dfoutput = pd.Series(lbtest[0:4],
                              index=['Ljung-Box Test Statistic', 'Ljung-Box p-value: ',
                                     'Box Pierce Test Statistic', 'Box Pierce p-value'])
-        print dfoutput
+        print(dfoutput)
 
     def residualTest(self, residual):
         plt.subplot(211)

@@ -70,23 +70,9 @@ class Data:
     def getSeasonalityEffects(self, data):
         data = pd.to_datetime(data, format='%Y-%m-%d')
 
-        monday = [] #Monday effect
-        january = [] #January effect
-        end = [] #End of Year effect
-        for i in range(len(data)):
-            if(data[i].weekday() == 0): #Monday
-                monday.append(1)
-            else:
-                monday.append(0)
-            if(data[i].month == 1): #January
-                january.append(1)
-            else:
-                january.append(0)
-
-            if(data[i].month == 12): #End-of-year
-                end.append(1)
-            else:
-                end.append(0)
+        monday = [1 if x.weekday() == 0 else 0 for x in data]
+        january = [1 if x.month == 1 else 0 for x in data]
+        end = [1 if x.month == 12 else 0 for x in data]
 
         matrix = np.column_stack((monday, january, end))
         return matrix

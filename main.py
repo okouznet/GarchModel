@@ -10,7 +10,7 @@ if __name__ == '__main__':
     d = data.Data()
     stock_data = pd.DataFrame()
     shock_data = pd.DataFrame()
-    response = raw_input("Do you need to collect data (y/n): ")
+    response = input("Do you need to collect data (y/n): ")
     if(response == 'y'):
         print("test")
         stock_data = d.stockData(stocks=['xlp','xly', 'xle', 'xlk', 'xlf', 'xlv', 'xli', 'xlb', 'xlre', 'xlu'])
@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
     #basic statistics test
     test = tests.Test()
-    basic_tests = raw_input("Do you want to run basic statistical tests (y/n)?: ")
+    basic_tests = input("Do you want to run basic statistical tests (y/n)?: ")
     if(basic_tests == 'y'):
         test.testStationary(ts=stock_data['xlp'][1000:1200])
         df = np.column_stack((data['xlp'], data['GDP'], data['UMCSENT'], data['CPIAUCSL']))
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     m.plotFullModel(y=y[1000:1050], full=full_fitted[1000:1050])
 
     #residual tests
-    resid_tests = raw_input("Do you want to run residual distribution tests (y/n)?: ")
+    resid_tests = input("Do you want to run residual distribution tests (y/n)?: ")
     if(resid_tests == 'y'):
         resid = y - full_fitted
         test.residualTest(residual=resid[1000:1200])
