@@ -13,8 +13,8 @@ if __name__ == '__main__':
     response = input("Do you need to collect data (y/n): ")
     if(response == 'y'):
         print("test")
-        stock_data = d.stockData(stocks=['xlp','xly', 'xle', 'xlk', 'xlf', 'xlv', 'xli', 'xlb', 'xlre', 'xlu'])
-        shock_data = d.shockData()
+        stock_data = d.preprocessStockData(stocks=['xlp', 'xly', 'xle', 'xlk', 'xlf', 'xlv', 'xli', 'xlb', 'xlre', 'xlu'])
+        shock_data = d.preprocessMacroeconomicData()
     else:
         stock_data = pd.read_csv('stocks.csv')
         shock_data = pd.read_csv('shocks.csv')
@@ -25,11 +25,11 @@ if __name__ == '__main__':
     test = tests.Test()
     basic_tests = input("Do you want to run basic statistical tests (y/n)?: ")
     if(basic_tests == 'y'):
-        test.testStationary(ts=stock_data['xlp'][1000:1200])
+        test.stationary_test(ts=stock_data['xlp'][1000:1200])
         df = np.column_stack((data['xlp'], data['GDP'], data['UMCSENT'], data['CPIAUCSL']))
         dftest = pd.DataFrame(df, columns=['xlp', 'GDP', 'UMCSENT', 'CPI'])
-        test.CorrelationPlot(data=dftest)
-        test.scatterMatrix(data=dftest)
+        test.correlation_plot(data=dftest)
+        test.scatter_matrix(data=dftest)
 
     m = model.Model()
     ylag = data['xlp'].shift(periods=1).values.astype(float)
@@ -46,9 +46,9 @@ if __name__ == '__main__':
     full_data = np.column_stack((y, ylag, seasonality_data[2:2370, 0], seasonality_data[2:2370, 1], seasonality_data[2:2370, 2], gdp))
 
     #run MLE estimation
-    simple = optimize.fmin(m.GARCH11_logLSimple,np.array([.5, .5, .5, .5, .5]), args=(simple_data,), maxfun=100000, maxiter=10000, full_output=1)
-    seasonal = optimize.fmin(m.GARCH11_logLSeasonal,np.array([.5, .5, .5, .5, .5, 0, 0, 0, 0, 0, 0]), args=(seasonal_data,), maxfun=100000, maxiter=10000, full_output=1)
-    full = optimize.fmin(m.GARCH11_logLFull,np.array([.5, .5, .5, .5, .5, 0, 0, 0, 0, 0, 0, 0]), args=(full_data,), maxfun=100000, maxiter=10000, full_output=1)
+    simple = optimize.fmin(m.garch11_model, np.array([.5, .5, .5, .5, .5]), args=(simple_data,), maxfun=100000, maxiter=10000, full_output=1)
+    seasonal = optimize.fmin(m.garch11_controlled_model, np.array([.5, .5, .5, .5, .5, 0, 0, 0, 0, 0, 0]), args=(seasonal_data,), maxfun=100000, maxiter=10000, full_output=1)
+    full = optimize.fmin(m.garch11_full_model, np.array([.5, .5, .5, .5, .5, 0, 0, 0, 0, 0, 0, 0]), args=(full_data,), maxfun=100000, maxiter=10000, full_output=1)
 
     #get estimated parameters
     simple_est = np.abs(simple[0])
@@ -56,17 +56,17 @@ if __name__ == '__main__':
     full_est = np.abs(full[0])
 
     #calculate fitted values
-    simple_fitted = m.fittedValues(endog=simple_data, est_params=simple_est, model="simple")
-    seasonal_fitted = m.fittedValues(endog=seasonal_data, est_params=seasonal_est, model="seasonal")
-    full_fitted = m.fittedValues(endog=full_data, est_params=full_est, model="full")
+    simple_fitted = m.fitted_values(endog=simple_data, est_params=simple_est, model="simple")
+    seasonal_fitted = m.fitted_values(endog=seasonal_data, est_params=seasonal_est, model="seasonal")
+    full_fitted = m.fitted_values(endog=full_data, est_params=full_est, model="full")
 
-    m.plotFitted(y=y[1000:1050], simple=simple_fitted[1000:1050], seasonal=seasonal_fitted[1000:1050], full=full_fitted[1000:1050])
-    m.plotFullModel(y=y[1000:1050], full=full_fitted[1000:1050])
+    m.plot_fitted_values(y=y[1000:1050], simple=simple_fitted[1000:1050], seasonal=seasonal_fitted[1000:1050], full=full_fitted[1000:1050])
+    m.plot_full_model(y=y[1000:1050], full=full_fitted[1000:1050])
 
     #residual tests
-    resid_tests = input("Do you want to run residual distribution tests (y/n)?: ")
-    if(resid_tests == 'y'):
+    residual_tests = input("Do you want to run residual distribution tests (y/n)?: ")
+    if(residual_tests == 'y'):
         resid = y - full_fitted
-        test.residualTest(residual=resid[1000:1200])
-        test.acfTest(ts=resid[1000:1200])
-        test.ttest(a=simple_fitted, b=full_fitted)
+        test.residual_test(residual=resid[1000:1200])
+        test.acf_test(ts=resid[1000:1200])
+        test.t_test(a=simple_fitted, b=full_fitted)

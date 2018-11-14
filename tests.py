@@ -12,7 +12,7 @@ class Test:
     def __init__(self):
         pass
 
-    def CorrelationPlot(self, data):
+    def correlation_plot(self, data):
         corr = data.corr()
         c = corrplot.Corrplot(corr)
         fig = plt.figure()
@@ -21,13 +21,13 @@ class Test:
         fig.tight_layout()
         plt.show()
 
-    def CorrelationCoeff(self, a, b):
+    def correlation_coefficients(self, a, b):
         return pearsonr(a, b)
 
-    def scatterMatrix(self, data):
+    def scatter_matrix(self, data):
         pd.scatter_matrix(data, alpha=0.2, figsize=(6, 6), diagonal='kde')
 
-    def testStationary(self, ts):
+    def stationary_test(self, ts):
         # Determing rolling statistics
         rolmean = pd.rolling_mean(ts, window=12)
         rolstd = pd.rolling_std(ts, window=12)
@@ -51,7 +51,7 @@ class Test:
             dfoutput['Critical Value (%s)' % key] = value
         print(dfoutput)
 
-    def acfTest(self, ts):
+    def acf_test(self, ts):
         plot_acf(x=ts)
         plt.show()
         lbtest = acorr_ljungbox(x=ts, lags=1, boxpierce=True)
@@ -62,7 +62,7 @@ class Test:
                                     'Box Pierce Test Statistic', 'Box Pierce p-value'])
         print(dfoutput)
 
-    def residualTest(self, residual):
+    def residual_test(self, residual):
         plt.subplot(211)
         plt.plot(residual, 'bo', label='Residuals')
         plt.legend(loc='best')
@@ -77,6 +77,6 @@ class Test:
         probplot = ProbPlot(residual)
         probplot.qqplot()
 
-    def ttest(self, a, b):
+    def t_test(self, a, b):
         x = ttest_ind(a=a, b=b)
         print(x)

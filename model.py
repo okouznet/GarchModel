@@ -9,10 +9,10 @@ import matplotlib
 class Model:
 
     def __init__(self):
-        self.est = []
+        self.estimated = []
         self.z = []
 
-    def GARCH11_logLSimple(self, param, endog):
+    def garch11_model(self, param, endog):
         omega, alpha, beta, a, b = param
         r = endog[:, 0] - a - b * endog[:, 1]
         n = len(r)
@@ -23,7 +23,7 @@ class Model:
         logL = -((-np.log(s) - r ** 2 / s).sum())
         return logL
 
-    def GARCH11_logLSeasonal(self, param, endog):
+    def garch11_controlled_model(self, param, endog):
         omega, alpha, beta, a, b, monday, jan, end, gmon, gjan, gend = param
         r = endog[:, 0] - a - b*endog[:, 1] - monday*endog[:, 2] - jan*endog[:, 3] - end*endog[:, 4]
         n = len(r)
@@ -34,7 +34,7 @@ class Model:
         logL = -((-np.log(s) - r ** 2 / s).sum())
         return logL
 
-    def GARCH11_logLFull(self, param, endog):
+    def garch11_full_model(self, param, endog):
         omega, alpha, beta, a, b, monday, jan, end, gmon, gjan, gend, gdp = param
         r = endog[:, 0] - a - b*endog[:, 1] - monday*endog[:, 2] - jan*endog[:, 3] - end*endog[:, 4] - gdp*endog[:, 5]
         n = len(r)
@@ -45,11 +45,11 @@ class Model:
         logL = -((-np.log(s) - r ** 2 / s).sum())
         return logL
 
-    def fittedValues(self, endog, est_params, model):
+    def fitted_values(self, endog, est_params, model):
         if(model == "simple"):
             omega, alpha, beta, a, b = est_params
-            self.est = a + b * endog[:, 1]
-            e = endog[:, 0] - self.est
+            self.estimated = a + b * endog[:, 1]
+            e = endog[:, 0] - self.estimated
             n = len(e)
             h = np.ones(n) * 0.01
             h[2] = st.variance(e[0:3])
@@ -59,8 +59,8 @@ class Model:
             self.z = e * np.sqrt(h)
         elif(model == "seasonal"):
             omega, alpha, beta, a, b, monday, jan, end, gmon, gjan, gend = est_params
-            self.est = a + b * endog[:, 1] + monday*endog[:, 2] + jan*endog[:, 3] + end*endog[:, 4]
-            e = endog[:, 0] - self.est
+            self.estimated = a + b * endog[:, 1] + monday * endog[:, 2] + jan * endog[:, 3] + end * endog[:, 4]
+            e = endog[:, 0] - self.estimated
             n = len(e)
             h = np.ones(n) * 0.01
             h[2] = st.variance(e[0:3])
@@ -71,8 +71,8 @@ class Model:
             self.z = e * np.sqrt(h)
         else:
             omega, alpha, beta, a, b, monday, jan, end, gmon, gjan, gend, gdp = est_params
-            self.est = a + b * endog[:, 1] + monday*endog[:, 2] + jan*endog[:, 3] + end*endog[:, 4] + gdp*endog[:,5]
-            e = endog[:, 0] - self.est
+            self.estimated = a + b * endog[:, 1] + monday * endog[:, 2] + jan * endog[:, 3] + end * endog[:, 4] + gdp * endog[:, 5]
+            e = endog[:, 0] - self.estimated
             n = len(e)
             h = np.ones(n) * 0.01
             h[2] = st.variance(e[0:3])
@@ -80,9 +80,9 @@ class Model:
                 h[t] = (omega + alpha * e[t - 1] ** 2 + beta * (h[t - 1])) * math.exp(
                     gmon * endog[t, 2] - gjan * endog[t, 3] - gend * endog[t, 4])  # GARCH(1,1) model
             self.z = e * np.sqrt(h)
-        return self.est + self.z
+        return self.estimated + self.z
 
-    def plotFitted(self, y, simple, seasonal, full):
+    def plot_fitted_values(self, y, simple, seasonal, full):
         matplotlib.style.use('ggplot')
 
         fitted_val = np.column_stack((y, simple, seasonal, full))
@@ -91,11 +91,10 @@ class Model:
         #g.set_axis_bgcolor('k')
         plt.show()
 
-    def plotFullModel(self, y, full):
+    def plot_full_model(self, y, full):
         matplotlib.style.use('ggplot')
 
         fitted_val = np.column_stack((y, full))
         graph = pd.DataFrame(fitted_val, columns=['actual', 'estimated'])
         graph.plot(title="Actual vs Estimated Values")  # colormap='Blues',
-        # g.set_axis_bgcolor('k')
         plt.show()

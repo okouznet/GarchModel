@@ -8,7 +8,7 @@ class Data:
     def __init__(self):
         pass
 
-    def stockConnection(self, stocks=[]):
+    def stockDao(self, stocks=[]):
         data = pd.DataFrame()
         dates=[]
         for stock in stocks:
@@ -22,7 +22,7 @@ class Data:
         data['Dates'] = dates
         return data
 
-    def shockConnection(self, shock):
+    def macroEconomicShockDao(self, shock):
         fred = Fred(api_key='2d4b5ef2420e64d7e42928ffd9d6ff8c')
         d = pd.DataFrame(fred.get_series_as_of_date(shock, '6/1/2016'))
         data = pd.DataFrame()
@@ -33,8 +33,8 @@ class Data:
         data = data.drop_duplicates(subset='Dates')
         return data
 
-    def stockData(self, stocks=[]):
-        stock_data = self.stockConnection(stocks=stocks)
+    def preprocessStockData(self, stocks=[]):
+        stock_data = self.stockDao(stocks=stocks)
         stock_data.Dates = pd.to_datetime(stock_data['Dates'], format='%Y-%m-%d')
         stock_data.set_index(['Dates'], inplace=True)
         # calculate percent change
@@ -42,10 +42,10 @@ class Data:
         stock_data.to_csv(path_or_buf='stocks.csv', sep=',')
         return stock_data
 
-    def shockData(self):
-        gdp = self.shockConnection(shock='GDP')
-        umcsent = self.shockConnection(shock='UMCSENT')
-        cpi = self.shockConnection(shock='CPIAUCSL')
+    def preprocessMacroeconomicData(self):
+        gdp = self.macroEconomicShockDao(shock='GDP')
+        umcsent = self.macroEconomicShockDao(shock='UMCSENT')
+        cpi = self.macroEconomicShockDao(shock='CPIAUCSL')
 
         shock_data = pd.merge(gdp, umcsent, how='outer', on='Dates')
         shock_data = shock_data.sort_values('Dates')
@@ -59,7 +59,6 @@ class Data:
         shock_data['GDP'] = shock_data['GDP'].astype(float)
         shock_data['UMCSENT'] = shock_data['UMCSENT'].astype(float)
         shock_data['CPIAUCSL'] = shock_data['CPIAUCSL'].astype(float)
-        #shock_data = shock_data.pct_change(periods=1)
 
         start = shock_data.index.searchsorted(dt.datetime(2007, 1, 1))
         end = shock_data.index.searchsorted(dt.datetime(2016, 6, 1))
