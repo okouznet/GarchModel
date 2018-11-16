@@ -11,13 +11,12 @@ if __name__ == '__main__':
     stock_data = pd.DataFrame()
     shock_data = pd.DataFrame()
     response = input("Do you need to collect data (y/n): ")
-    if(response == 'y'):
-        print("test")
-        stock_data = d.preprocessStockData(stocks=['xlp', 'xly', 'xle', 'xlk', 'xlf', 'xlv', 'xli', 'xlb', 'xlre', 'xlu'])
-        shock_data = d.preprocessMacroeconomicData()
+    if response == 'y':
+        stock_data = d.prepocess_stock_data(stocks=['xlp', 'xly', 'xle', 'xlk', 'xlf', 'xlv', 'xli', 'xlb', 'xlre', 'xlu'])
+        shock_data = d.preprocess_macroeconomic_data()
     else:
-        stock_data = pd.read_csv('stocks.csv')
-        shock_data = pd.read_csv('shocks.csv')
+        stock_data = pd.read_csv('data/stocks.csv')
+        shock_data = pd.read_csv('data/shocks.csv')
 
     data = pd.merge(stock_data, shock_data, how='outer', on='Dates')
 
@@ -40,7 +39,7 @@ if __name__ == '__main__':
     ylag = ylag[2:2370]
     gdp = gdp[2:2370]
 
-    seasonality_data = d.getSeasonalityEffects(data=data['Dates'])
+    seasonality_data = d.get_seasonality_effects(data=data['Dates'])
     simple_data = np.column_stack((y, ylag))
     seasonal_data = np.column_stack((y, ylag, seasonality_data[2:2370, 0], seasonality_data[2:2370, 1], seasonality_data[2:2370, 2]))
     full_data = np.column_stack((y, ylag, seasonality_data[2:2370, 0], seasonality_data[2:2370, 1], seasonality_data[2:2370, 2], gdp))
@@ -65,8 +64,8 @@ if __name__ == '__main__':
 
     #residual tests
     residual_tests = input("Do you want to run residual distribution tests (y/n)?: ")
-    if(residual_tests == 'y'):
-        resid = y - full_fitted
-        test.residual_test(residual=resid[1000:1200])
-        test.acf_test(ts=resid[1000:1200])
+    if residual_tests == 'y':
+        residuals = y - full_fitted
+        test.residual_test(residual=residuals[1000:1200])
+        test.acf_test(ts=residuals[1000:1200])
         test.t_test(a=simple_fitted, b=full_fitted)

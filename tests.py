@@ -8,6 +8,7 @@ from statsmodels.graphics.gofplots import ProbPlot
 from scipy.stats.stats import pearsonr
 from scipy.stats import ttest_ind
 
+
 class Test:
     def __init__(self):
         pass
@@ -16,7 +17,6 @@ class Test:
         corr = data.corr()
         c = corrplot.Corrplot(corr)
         fig = plt.figure()
-        ax = fig.add_subplot(1, 1, 1)
         c.plot()
         fig.tight_layout()
         plt.show()
@@ -28,6 +28,7 @@ class Test:
         pd.scatter_matrix(data, alpha=0.2, figsize=(6, 6), diagonal='kde')
 
     def stationary_test(self, ts):
+
         # Determing rolling statistics
         rolmean = pd.rolling_mean(ts, window=12)
         rolstd = pd.rolling_std(ts, window=12)
@@ -35,9 +36,9 @@ class Test:
         # Plot rolling statistics:
         plt.style.use('ggplot')
         plt.subplot(111)
-        orig = plt.plot(ts, color='blue', label='Original')
-        mean = plt.plot(rolmean, color='red', label='Rolling Mean')
-        std = plt.plot(rolstd, color='black', label='Rolling Std')
+        plt.plot(ts, color='blue', label='Original')
+        plt.plot(rolmean, color='red', label='Rolling Mean')
+        plt.plot(rolstd, color='black', label='Rolling Std')
         plt.legend(loc='best')
         plt.title('Rolling Mean & Standard Deviation')
         plt.show()
@@ -55,7 +56,7 @@ class Test:
         plot_acf(x=ts)
         plt.show()
         lbtest = acorr_ljungbox(x=ts, lags=1, boxpierce=True)
-        #lb, lbpval, bp, bppval
+        # lb, lbpval, bp, bppval
         print('Results of Ljung Box Test and Box Pierce Test: ')
         dfoutput = pd.Series(lbtest[0:4],
                              index=['Ljung-Box Test Statistic', 'Ljung-Box p-value: ',

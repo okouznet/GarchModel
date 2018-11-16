@@ -4,25 +4,26 @@ import datetime as dt
 from yahoo_finance import Share
 from fredapi import Fred
 
+
 class Data:
     def __init__(self):
         pass
 
-    def stockDao(self, stocks=[]):
+    def stock_dao(self, stocks=[]):
         data = pd.DataFrame()
         dates=[]
         for stock in stocks:
             s = Share(stock)
             d = pd.DataFrame(s.get_historical('2007-01-01', '2016-06-01'))
+            print(d)
             dates = d['Date']
             x = d['Adj_Close']
             x = x.astype(float)
             data[stock] = x.pct_change(periods=1)
-            #data[stock] = x
         data['Dates'] = dates
         return data
 
-    def macroEconomicShockDao(self, shock):
+    def macoeconomic_shock_dao(self, shock):
         fred = Fred(api_key='2d4b5ef2420e64d7e42928ffd9d6ff8c')
         d = pd.DataFrame(fred.get_series_as_of_date(shock, '6/1/2016'))
         data = pd.DataFrame()
@@ -33,19 +34,20 @@ class Data:
         data = data.drop_duplicates(subset='Dates')
         return data
 
-    def preprocessStockData(self, stocks=[]):
-        stock_data = self.stockDao(stocks=stocks)
+    def prepocess_stock_data(self, stocks=[]):
+        stock_data = self.stock_dao(stocks=stocks)
         stock_data.Dates = pd.to_datetime(stock_data['Dates'], format='%Y-%m-%d')
         stock_data.set_index(['Dates'], inplace=True)
+
         # calculate percent change
         stock_data = stock_data.pct_change(periods=1)
         stock_data.to_csv(path_or_buf='stocks.csv', sep=',')
         return stock_data
 
-    def preprocessMacroeconomicData(self):
-        gdp = self.macroEconomicShockDao(shock='GDP')
-        umcsent = self.macroEconomicShockDao(shock='UMCSENT')
-        cpi = self.macroEconomicShockDao(shock='CPIAUCSL')
+    def preprocess_macroeconomic_data(self):
+        gdp = self.macoeconomic_shock_dao(shock='GDP')
+        umcsent = self.macoeconomic_shock_dao(shock='UMCSENT')
+        cpi = self.macoeconomic_shock_dao(shock='CPIAUCSL')
 
         shock_data = pd.merge(gdp, umcsent, how='outer', on='Dates')
         shock_data = shock_data.sort_values('Dates')
@@ -66,13 +68,12 @@ class Data:
         shock_data.to_csv(path_or_buf='shocks.csv', sep=',')
         return shock_data
 
-    def getSeasonalityEffects(self, data):
-        data = pd.to_datetime(data, format='%Y-%m-%d')
+    def get_seasonality_effects(self, data):
+        df = pd.to_datetime(data, format='%Y-%m-%d')
 
-        monday = [1 if x.weekday() == 0 else 0 for x in data]
-        january = [1 if x.month == 1 else 0 for x in data]
-        end = [1 if x.month == 12 else 0 for x in data]
+        monday = [1 if x.weekday() == 0 else 0 for x in df]
+        january = [1 if x.month == 1 else 0 for x in df]
+        end = [1 if x.month == 12 else 0 for x in df]
 
         matrix = np.column_stack((monday, january, end))
         return matrix
-
